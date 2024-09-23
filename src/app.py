@@ -10,7 +10,7 @@ def hello():
     return "Hello World!"
 
 # Application Routes
-from .etablissement import urls
+from .routes import etablissement, utilisateur
 
 # Run the app
 

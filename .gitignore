@@ -1,3 +1,4 @@
 .gitignore
 .venv
-src/.env
+.env
+__pycache__/
