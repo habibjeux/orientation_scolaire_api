@@ -12,7 +12,7 @@ def add_etablissement():
 def delete_etablissement(id):
     return delete(id)
 
-@app.route('/etablissement/all', methods=['GET'])
+@app.route('/etablissement', methods=['GET'])
 def etablissements():
     return get_all()
 
