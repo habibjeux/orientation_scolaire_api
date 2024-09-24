@@ -11,6 +11,10 @@ class Utilisateur(db.Model):
     adresse = db.Column(db.String(255))
     role = db.Column(db.Enum('super_admin', 'gerant', 'enseignant', 'eleve', name='user_role_enum'))
 
+    gerant = db.relationship('GerantEtablissement', backref='utilisateur', uselist=False)
+    eleve = db.relationship('Eleve', backref='utilisateur', uselist=False)
+    enseignant = db.relationship('Enseignant', backref='utilisateur', uselist=False)
+
     def set_password(self, password):
         self.mot_de_passe = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
@@ -33,6 +37,13 @@ class Calendrier(db.Model):
     debut = db.Column(db.DateTime)
     fin = db.Column(db.DateTime)
 
+    inscriptions = db.relationship('Inscription', backref='calendrier')
+    enseignements = db.relationship('Enseigner', backref='calendrier')
+    notes = db.relationship('Note', backref='calendrier')
+    appreciations_specifiques = db.relationship('AppreciationCompetenceSpecifique', backref='calendrier')
+    appreciations_comportementales = db.relationship('AppreciationCompetenceComportementale', backref='calendrier')
+    appreciations_aptitudes = db.relationship('AppreciationAptitude', backref='calendrier')
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -45,6 +56,10 @@ class Etablissement(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nom = db.Column(db.String(100))
     adresse = db.Column(db.String(255))
+
+    gerants = db.relationship('GerantEtablissement', backref='etablissement')
+    inscriptions = db.relationship('Inscription', backref='etablissement')
+    enseignements = db.relationship('Enseigner', backref='etablissement')
 
     def to_dict(self):
         return {
@@ -70,6 +85,9 @@ class Classe(db.Model):
     libelle = db.Column(db.String(50))
     serie = db.Column(db.String(50))
 
+    inscriptions = db.relationship('Inscription', backref='classe')
+    enseignements = db.relationship('Enseigner', backref='classe')
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -81,6 +99,9 @@ class Metier(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     libelle = db.Column(db.String(100))
 
+    eleves = db.relationship('Eleve', backref='metier')
+    matieres = db.relationship('MetierMatiere', backref='metier')
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -91,6 +112,13 @@ class Eleve(db.Model):
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), primary_key=True)
     matricule = db.Column(db.String(20))
     metier_id = db.Column(db.Integer, db.ForeignKey('metier.id'))
+
+    inscriptions = db.relationship('Inscription', backref='eleve')
+    notes = db.relationship('Note', backref='eleve')
+    interets = db.relationship('InteretEleve', backref='eleve')
+    appreciations_specifiques = db.relationship('AppreciationCompetenceSpecifique', backref='eleve')
+    appreciations_comportementales = db.relationship('AppreciationCompetenceComportementale', backref='eleve')
+    appreciations_aptitudes = db.relationship('AppreciationAptitude', backref='eleve')
 
     def to_dict(self):
         return {
@@ -117,6 +145,8 @@ class Enseignant(db.Model):
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), primary_key=True)
     matricule = db.Column(db.String(20))
 
+    enseignements = db.relationship('Enseigner', backref='enseignant')
+
     def to_dict(self):
         return {
             'utilisateur_id': self.utilisateur_id,
@@ -126,6 +156,11 @@ class Enseignant(db.Model):
 class Matiere(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     libelle = db.Column(db.String(100))
+
+    metiers = db.relationship('MetierMatiere', backref='matiere')
+    enseignements = db.relationship('Enseigner', backref='matiere')
+    notes = db.relationship('Note', backref='matiere')
+    ressources = db.relationship('Ressource', backref='matiere')
 
     def to_dict(self):
         return {
@@ -188,6 +223,8 @@ class AppreciationCompetenceSpecifique(db.Model):
     calendrier_id = db.Column(db.Integer, db.ForeignKey('calendrier.id'), primary_key=True)
     semestre = db.Column(db.Enum('1', '2', name='semestre_enum'), primary_key=True)
 
+    competence = db.relationship('CompetenceSpecifique', backref='appreciations')
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -203,6 +240,8 @@ class AppreciationCompetenceComportementale(db.Model):
     competence_id = db.Column(db.Integer, db.ForeignKey('competence_comportementale.id'), primary_key=True)
     calendrier_id = db.Column(db.Integer, db.ForeignKey('calendrier.id'), primary_key=True)
     semestre = db.Column(db.Enum('1', '2', name='semestre_enum'), primary_key=True)
+
+    competence = db.relationship('CompetenceComportementale', backref='appreciations')
 
     def to_dict(self):
         return {
@@ -220,6 +259,8 @@ class AppreciationAptitude(db.Model):
     calendrier_id = db.Column(db.Integer, db.ForeignKey('calendrier.id'), primary_key=True)
     semestre = db.Column(db.Enum('1', '2', name='semestre_enum'), primary_key=True)
 
+    aptitude = db.relationship('Aptitude', backref='appreciations')
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -233,6 +274,8 @@ class InteretEleve(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     eleve_id = db.Column(db.Integer, db.ForeignKey('eleve.utilisateur_id'))
     interet_id = db.Column(db.Integer, db.ForeignKey('interet.id'))
+
+    interet = db.relationship('Interet', backref='eleves')
 
     def to_dict(self):
         return {
