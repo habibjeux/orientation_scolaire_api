@@ -58,6 +58,7 @@ class Etablissement(db.Model):
     adresse = db.Column(db.String(255))
 
     gerants = db.relationship('GerantEtablissement', backref='etablissement')
+    enseignants = db.relationship('Enseignant', backref='etablissement')
     inscriptions = db.relationship('Inscription', backref='etablissement')
     enseignements = db.relationship('Enseigner', backref='etablissement')
 
@@ -144,6 +145,7 @@ class Inscription(db.Model):
 class Enseignant(db.Model):
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), primary_key=True)
     matricule = db.Column(db.String(20))
+    etablissement_id = db.Column(db.Integer, db.ForeignKey('etablissement.id'))
 
     enseignements = db.relationship('Enseigner', backref='enseignant')
 
@@ -151,6 +153,7 @@ class Enseignant(db.Model):
         return {
             'utilisateur_id': self.utilisateur_id,
             'matricule': self.matricule,
+            'etablissement_id': self.etablissement_id,
         }
 
 class Matiere(db.Model):
