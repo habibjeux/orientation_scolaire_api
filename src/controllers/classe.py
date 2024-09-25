@@ -32,3 +32,32 @@ def get_by_id(id):
   if classe is None:
       return jsonify({'message': 'Classe introuvable'}), 404
   return jsonify(classe.to_dict())
+
+def update(id):
+  classe = Classe.query.get(id)
+  if classe is None:
+      return jsonify({'message': 'Classe introuvable'}), 404
+
+  data = request.get_json()
+  libelle = data.get('libelle')
+  serie = data.get('serie')
+  if libelle is not None:
+      classe.libelle = libelle
+  if serie is not None:
+      classe.serie = serie
+
+  existing_classe = Classe.query.filter_by(libelle=libelle, serie=serie).first()
+  if existing_classe is not None and existing_classe.id != id:
+      return jsonify({'message': 'Classe déjà existante'}), 409
+
+  db.session.commit()
+  return jsonify({'message': 'Classe modifiée avec succès'})
+
+def delete(id):
+  classe = Classe.query.get(id)
+  if classe is None:
+      return jsonify({'message': 'Classe introuvable'}), 404
+
+  db.session.delete(classe)
+  db.session.commit()
+  return jsonify({'message': 'Classe supprimée avec succès'})
