@@ -61,6 +61,7 @@ class Etablissement(db.Model):
     enseignants = db.relationship('Enseignant', backref='etablissement')
     inscriptions = db.relationship('Inscription', backref='etablissement')
     enseignements = db.relationship('Enseigner', backref='etablissement')
+    eleves = db.relationship('Eleve', backref='etablissement')
 
     def to_dict(self):
         return {
@@ -113,6 +114,7 @@ class Eleve(db.Model):
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), primary_key=True)
     matricule = db.Column(db.String(20))
     metier_id = db.Column(db.Integer, db.ForeignKey('metier.id'))
+    etablissement_id = db.Column(db.Integer, db.ForeignKey('etablissement.id'))
 
     inscriptions = db.relationship('Inscription', backref='eleve')
     notes = db.relationship('Note', backref='eleve')
