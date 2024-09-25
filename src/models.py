@@ -33,9 +33,10 @@ class Utilisateur(db.Model):
 
 class Calendrier(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    titre = db.Column(db.String(255))
+    annee_academique = db.Column(db.String(9))  # Format : YYYY-YYYY
     debut = db.Column(db.DateTime)
     fin = db.Column(db.DateTime)
+    etablissement_id = db.Column(db.Integer, db.ForeignKey('etablissement.id'))
 
     inscriptions = db.relationship('Inscription', backref='calendrier')
     enseignements = db.relationship('Enseigner', backref='calendrier')
@@ -47,8 +48,8 @@ class Calendrier(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'titre': self.titre,
-            'debut': self.debut.isoformat() if self.debut else None,
+            'annee-academique': self.annee_academique,
+            'debut': self.debut.isoformat(),
             'fin': self.fin.isoformat() if self.fin else None,
         }
 
@@ -57,6 +58,7 @@ class Etablissement(db.Model):
     nom = db.Column(db.String(100))
     adresse = db.Column(db.String(255))
 
+    calendriers = db.relationship('Calendrier', backref='etablissement')
     gerants = db.relationship('GerantEtablissement', backref='etablissement')
     enseignants = db.relationship('Enseignant', backref='etablissement')
     inscriptions = db.relationship('Inscription', backref='etablissement')
