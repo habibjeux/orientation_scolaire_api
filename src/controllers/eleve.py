@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
 from .. import db
-from ..models import Eleve, Etablissement, Metier, Utilisateur
+from ..models import Calendrier, Classe, Eleve, Etablissement, Inscription, Metier, Utilisateur
 
 def create():
   data = request.get_json()
@@ -139,3 +139,103 @@ def update(id):
   except:
     return jsonify({'message': 'Erreur lors de la modification de l\'eleve'}), 500
   
+def transfert(id):
+  eleve = Eleve.query.get(id)
+  if not eleve:
+    return jsonify({'message': 'Eleve non trouvé'}), 404
+  
+  data = request.get_json()
+  if not data.get('etablissement'):
+    return jsonify({'message': 'Veuillez saisir l\'etablissement de destination'}), 400
+  etablissement = Etablissement.query.filter_by(nom=data['etablissement']).first()
+  if not etablissement:
+    return jsonify({'message': 'Etablissement non trouvé'}), 404
+  
+  eleve.etablissement_id = etablissement.id
+  try:
+    db.session.commit()
+    return jsonify({'message': 'Eleve transféré avec succès'}), 200
+  except:
+    return jsonify({'message': 'Erreur lors du transfert de l\'eleve'}), 500
+  
+def get_by_etablissement(id):
+  eleves = Eleve.query.filter_by(etablissement_id=id).all()
+  eleves_data = []
+  for eleve in eleves:
+    eleve_data = {
+      'id': eleve.utilisateur.id,
+      'prenom': eleve.utilisateur.prenom,
+      'nom': eleve.utilisateur.nom,
+      'date_naissance': eleve.utilisateur.date_naissance,
+      'adresse': eleve.utilisateur.adresse,
+      'matricule': eleve.matricule,
+      'etablissement': eleve.etablissement.nom if eleve.etablissement else None,
+      'metier': eleve.metier.libelle if eleve.metier else None
+    }
+    eleves_data.append(eleve_data)
+  return jsonify(eleves_data), 200
+
+def inscrire(id):
+  eleve = Eleve.query.get(id)
+  if not eleve:
+    return jsonify({'message': 'Eleve non trouvé'}), 404
+  
+  data = request.get_json()
+  if not data.get('metier'):
+    return jsonify({'message': 'Veuillez saisir le metier à inscrire'}), 400
+  metier = Metier.query.filter_by(libelle=data['metier']).first()
+  if not metier:
+    return jsonify({'message': 'Metier non trouvé'}), 404
+  
+  eleve.metier_id = metier.id
+  try:
+    db.session.commit()
+    return jsonify({'message': 'Eleve inscrit avec succès'}), 200
+  except:
+    return jsonify({'message': 'Erreur lors de l\'inscription de l\'eleve'}), 500
+  
+
+'''
+class Inscription(db.Model):
+    eleve_id = db.Column(db.Integer, db.ForeignKey('eleve.utilisateur_id'), primary_key=True)
+    classe_id = db.Column(db.Integer, db.ForeignKey('classe.id'), primary_key=True)
+    etablissement_id = db.Column(db.Integer, db.ForeignKey('etablissement.id'), primary_key=True)
+    calendrier_id = db.Column(db.Integer, db.ForeignKey('calendrier.id'), primary_key=True)
+'''
+
+def inscrire(id):
+  eleve = Eleve.query.get(id)
+  if not eleve:
+    return jsonify({'message': 'Eleve non trouvé'}), 404
+  
+  data = request.get_json()
+  classe = data['classe']
+  etablissement = data['etablissement']
+  annee_academique = data['annee-academique']
+
+  if not classe or not etablissement or not annee_academique:
+    return jsonify({'message': 'Veuillez saisir tous les champs obligatoires'}), 400
+  
+  classe = Classe.query.filter_by(libelle=classe).first()
+  if not classe:
+    return jsonify({'message': 'Classe non trouvée'}), 404
+  
+  etablissement = Etablissement.query.filter_by(nom=etablissement).first()
+  if not etablissement:
+    return jsonify({'message': 'Etablissement non trouvé'}), 404
+  
+  if eleve.etablissement_id != etablissement.id:
+    return jsonify({'message': 'L\'eleve n\'appartient pas à cet établissement'}), 400
+  
+  calendrier = Calendrier.query.filter_by(etablissement_id=etablissement.id, annee_academique=annee_academique).first()
+  if not calendrier:
+    return jsonify({'message': 'Calendrier non trouvé'}), 404
+  
+  inscription = Inscription(eleve_id=eleve.utilisateur_id, classe_id=classe.id, etablissement_id=etablissement.id, calendrier_id=calendrier.id)
+
+  try:
+    db.session.add(inscription)
+    db.session.commit()
+    return jsonify({'message': 'Eleve inscrit avec succès'}), 201
+  except:
+    return jsonify({'message': 'Erreur lors de l\'inscription de l\'eleve'}), 500

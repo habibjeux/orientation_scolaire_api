@@ -23,3 +23,16 @@ def delete_eleve(id):
 @app.route('/eleve/<int:id>', methods=['PUT'])
 def update_eleve(id):
   return update(id)
+
+@app.route('/eleve/transfert/<int:id>', methods=['PUT'])
+def transfert_eleve(id):
+  return transfert(id)
+
+@app.route('/eleve/etablissement/<int:id>', methods=['GET'])
+def get_eleves_by_etablissement(id):
+  return get_by_etablissement(id)
+
+@app.route('/eleve/inscription/<int:id>', methods=['POST'])
+def inscrire_eleve(id):
+  return inscrire(id)
+
