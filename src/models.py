@@ -51,6 +51,7 @@ class Calendrier(db.Model):
             'annee-academique': self.annee_academique,
             'debut': self.debut.isoformat(),
             'fin': self.fin.isoformat() if self.fin else None,
+            'etablissement_id': self.etablissement_id,
         }
 
 class Etablissement(db.Model):
