@@ -8,7 +8,7 @@ from ..controllers.utilisateur import *
 def add_utilisateur():
     return create()
 
-@app.route('/utilisateur/all', methods=['GET'])
+@app.route('/utilisateur', methods=['GET'])
 def utilisateurs():
     return get_all()
 
