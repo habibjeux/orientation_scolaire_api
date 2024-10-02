@@ -23,3 +23,7 @@ def update_calendrier(id):
 @app.route('/calendrier/<id>', methods=['DELETE'])
 def delete_calendrier(id):
     return delete(id)
+
+@app.route('/calendrier/etablissement/<etablissement_id>', methods=['GET'])
+def calendrier_etablissement(etablissement_id):
+    return get_by_etablissement(etablissement_id)

@@ -16,7 +16,7 @@ def gerants():
 def get_gerant(id):
     return get_by_id(id)
 
-@app.route('/gerant/assign-etablissement', methods=['POST'])
+@app.route('/gerant/assign-etablissement', methods=['PUT'])
 def assign_etablissement():
     return assign_etablissement_to_gerant()
 

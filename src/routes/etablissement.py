@@ -24,6 +24,6 @@ def etablissement(id):
 def update_etablissement(id):
     return update(id)
 
-@app.route('/etablissement/search/<name>', methods=['GET'])
-def search_etablissement(name):
-    return search_by_name(name)
+@app.route('/etablissement/no_assigned', methods=['GET'])
+def get_etablissement_no_assigned():
+    return etablissement_no_assigned()

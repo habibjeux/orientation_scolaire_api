@@ -3,7 +3,6 @@ from flask import request, jsonify
 from .. import db
 from ..models import GerantEtablissement, Utilisateur, Etablissement
 from .utilisateur import user_exists
-from .etablissement import search_by_name as search_etablissement_by_name
 
 def create():
   
@@ -11,14 +10,13 @@ def create():
 
   prenom = data.get('prenom')
   nom = data.get('nom')
-  mot_de_passe = data.get('mot_de_passe')
   role = 'gerant'
   date_naissance = data.get('date_naissance')
   adresse = data.get('adresse')
   email = data.get('email')
 
   # Vérification des champs obligatoires
-  if not prenom or not nom or not mot_de_passe or not date_naissance or not adresse or not email:
+  if not prenom or not nom or not date_naissance or not adresse or not email:
       return jsonify({'error': 'Veuillez sairir tous les champs'}), 400
   
   # Vérification si l'email est déjà utilisé par un autre gérant
@@ -31,7 +29,7 @@ def create():
 
   # Création de l'utilisateur
   utilisateur = Utilisateur(prenom=prenom, nom=nom, role=role, date_naissance=date_naissance, adresse=adresse)
-  utilisateur.set_password(mot_de_passe)
+  utilisateur.set_password("passer123")
 
   try:
     db.session.add(utilisateur)
@@ -118,3 +116,34 @@ def delete_gerant(id):
     return jsonify({'message': 'Erreur lors de la suppression du gérant'}), 500
 
 
+def update(id):
+  data = request.get_json()
+  gerant = GerantEtablissement.query.get(id)
+  if not gerant:
+    return jsonify({'message': 'Gérant non trouvé'}), 404
+  
+  prenom = data.get('prenom')
+  nom = data.get('nom')
+  date_naissance = data.get('date_naissance')
+  adresse = data.get('adresse')
+  email = data.get('email')
+
+  if prenom:
+    gerant.utilisateur.prenom = prenom
+  if nom:
+    gerant.utilisateur.nom = nom
+  if date_naissance:
+    gerant.utilisateur.date_naissance = date_naissance
+  if adresse:
+    gerant.utilisateur.adresse = adresse
+  if email:
+    existing_email = GerantEtablissement.query.filter(GerantEtablissement.email==email, GerantEtablissement.utilisateur_id!=id).first()
+    if existing_email:
+      return jsonify({'message': 'Email déjà pris'}), 400
+    gerant.email = email
+
+  try:
+    db.session.commit()
+    return jsonify({'message': 'Gérant modifié avec succès'}), 200
+  except:
+    return jsonify({'message': 'Erreur lors de la modification du gérant'}), 500

@@ -4,23 +4,14 @@ from flask import request, jsonify
 from .. import db
 from ..models import Calendrier, Etablissement
 
-'''
-class Calendrier(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    annee_academique = db.Column(db.String(9))  # Format : YYYY-YYYY
-    debut = db.Column(db.DateTime)
-    fin = db.Column(db.DateTime)
-    etablissement_id = db.Column(db.Integer, db.ForeignKey('etablissement.id'))
-'''
-
 def create():
     data = request.get_json()
     debut = data.get('debut')
     fin = data.get('fin')
-    annee_academique = data.get('annee-academique')
-    etablissement = data.get('etablissement')
+    annee_academique = data.get('annee_academique')
+    etablissement_id = data.get('etablissement_id')
 
-    if not debut or not annee_academique or not etablissement:
+    if not debut or not annee_academique or not etablissement_id:
         return jsonify({'message': 'Veuillez saisir tous les champs obligatoires'}), 400
     
     if len(annee_academique) != 9 or annee_academique[4] != '-':
@@ -38,7 +29,7 @@ def create():
         if debut > fin:
             return jsonify({'message': 'Plage de date invalide'}), 400
         
-    etablissement = Etablissement.query.filter_by(nom=etablissement).first()
+    etablissement = Etablissement.query.get(etablissement_id);
     if not etablissement:
         return jsonify({'message': 'Etablissement non trouvé'}), 404
     
@@ -61,6 +52,10 @@ def create():
 
 def get_all():
     calendriers = Calendrier.query.all()
+    return jsonify([calendrier.to_dict() for calendrier in calendriers])
+
+def get_by_etablissement(etablissement_id):
+    calendriers = Calendrier.query.filter_by(etablissement_id=etablissement_id).all()
     return jsonify([calendrier.to_dict() for calendrier in calendriers])
 
 def get_by_id(id):

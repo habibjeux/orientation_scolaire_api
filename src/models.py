@@ -48,7 +48,7 @@ class Calendrier(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'annee-academique': self.annee_academique,
+            'annee_academique': self.annee_academique,
             'debut': self.debut.isoformat(),
             'fin': self.fin.isoformat() if self.fin else None,
             'etablissement_id': self.etablissement_id,
