@@ -11,6 +11,7 @@ class Utilisateur(db.Model):
     adresse = db.Column(db.String(255))
     role = db.Column(db.Enum('super_admin', 'gerant', 'enseignant', 'eleve', name='user_role_enum'))
 
+    niveaux = db.relationship('NiveauEtablissement', backref='etablissement') 
     gerant = db.relationship('GerantEtablissement', backref='utilisateur', uselist=False)
     eleve = db.relationship('Eleve', backref='utilisateur', uselist=False)
     enseignant = db.relationship('Enseignant', backref='utilisateur', uselist=False)
@@ -58,6 +59,7 @@ class Etablissement(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nom = db.Column(db.String(100))
     adresse = db.Column(db.String(255))
+    niveau = db.Column(db.Enum('moyen', 'lycee', 'moyen-lycee', name='niveau_enum'))
 
     calendriers = db.relationship('Calendrier', backref='etablissement')
     gerants = db.relationship('GerantEtablissement', backref='etablissement')
@@ -71,6 +73,31 @@ class Etablissement(db.Model):
             'id': self.id,
             'nom': self.nom,
             'adresse': self.adresse,
+            'niveau': str(self.niveau),
+        }
+
+class Niveau(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    libelle = db.Column(db.Enum('moyen', 'lycee', name='niveau_enum'))  # Enum for niveau
+
+    etablissement_associes = db.relationship('NiveauEtablissement', backref='niveau')  # Relationship with NiveauEtablissement
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'libelle': self.libelle,
+        }
+
+class NiveauEtablissement(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    etablissement_id = db.Column(db.Integer, db.ForeignKey('etablissement.id'))
+    niveau_id = db.Column(db.Integer, db.ForeignKey('niveau.id'))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'etablissement_id': self.etablissement_id,
+            'niveau_id': self.niveau_id,
         }
 
 class GerantEtablissement(db.Model):
@@ -88,7 +115,7 @@ class GerantEtablissement(db.Model):
 class Classe(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     libelle = db.Column(db.String(50))
-    serie = db.Column(db.String(50))
+    serie_id = db.Column(db.Integer, db.ForeignKey('serie.id'), nullable=True)
 
     inscriptions = db.relationship('Inscription', backref='classe')
     enseignements = db.relationship('Enseigner', backref='classe')
@@ -97,7 +124,22 @@ class Classe(db.Model):
         return {
             'id': self.id,
             'libelle': self.libelle,
-            'serie': self.serie,
+            'serie_id': self.serie_id,
+        }
+    
+class Serie(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    type = db.Column(db.String(3))
+    libelle = db.Column(db.String(30))
+
+    classes = db.relationship('Classe', backref='serie')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'type': self.type,
+            'libelle': self.libelle,
+            'classes': [classe.to_dict() for classe in self.classes]
         }
 
 class Metier(db.Model):
