@@ -11,7 +11,6 @@ class Utilisateur(db.Model):
     adresse = db.Column(db.String(255))
     role = db.Column(db.Enum('super_admin', 'gerant', 'enseignant', 'eleve', name='user_role_enum'))
 
-    niveaux = db.relationship('NiveauEtablissement', backref='etablissement') 
     gerant = db.relationship('GerantEtablissement', backref='utilisateur', uselist=False)
     eleve = db.relationship('Eleve', backref='utilisateur', uselist=False)
     enseignant = db.relationship('Enseignant', backref='utilisateur', uselist=False)
@@ -59,8 +58,8 @@ class Etablissement(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nom = db.Column(db.String(100))
     adresse = db.Column(db.String(255))
-    niveau = db.Column(db.Enum('moyen', 'lycee', 'moyen-lycee', name='niveau_enum'))
 
+    niveaux = db.relationship('NiveauEtablissement', backref='etablissement') 
     calendriers = db.relationship('Calendrier', backref='etablissement')
     gerants = db.relationship('GerantEtablissement', backref='etablissement')
     enseignants = db.relationship('Enseignant', backref='etablissement')
@@ -73,7 +72,7 @@ class Etablissement(db.Model):
             'id': self.id,
             'nom': self.nom,
             'adresse': self.adresse,
-            'niveau': str(self.niveau),
+            'niveaux': [niveau.to_dict() for niveau in self.niveaux],
         }
 
 class Niveau(db.Model):
